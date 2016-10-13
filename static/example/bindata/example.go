@@ -1,11 +1,12 @@
 package main
 
 import (
+	"net/http"
+	"strings"
+
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strings"
 )
 
 type binaryFileSystem struct {
@@ -27,8 +28,13 @@ func (b *binaryFileSystem) Exists(prefix string, filepath string) bool {
 	return false
 }
 
-func BinaryFileSystem(root string) *binaryFileSystem {
-	fs := &assetfs.AssetFS{Asset, AssetDir, root}
+func NewBinaryFileSystem(root string) *binaryFileSystem {
+	fs := &assetfs.AssetFS{
+		Asset:     Asset,
+		AssetDir:  AssetDir,
+		AssetInfo: AssetInfo,
+		Prefix:    root,
+	}
 	return &binaryFileSystem{
 		fs,
 	}
@@ -41,7 +47,7 @@ func BinaryFileSystem(root string) *binaryFileSystem {
 func main() {
 	r := gin.Default()
 
-	r.Use(static.Serve("/static", BinaryFileSystem("data")))
+	r.Use(static.Serve("/static", NewBinaryFileSystem("data")))
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(200, "test")
 	})
